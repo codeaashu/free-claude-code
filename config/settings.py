@@ -302,13 +302,31 @@ class Settings(BaseSettings):
         """Extract the actual model name from the default model string."""
         return self.model.split("/", 1)[1]
 
+    @staticmethod
+    def _strip_classifier_suffix(model_name: str) -> str:
+        """Strip the [1m] classifier suffix from model names.
+
+        The Auto Mode classifier in Claude Code appends [1m] to request a 1M
+        context window, but the classifier itself doesn't need the extended
+        context. Strip this suffix for model routing while preserving the
+        original model name for normal conversations.
+        """
+        if model_name.endswith("[1m]"):
+            return model_name[:-4]
+        return model_name
+
     def resolve_model(self, claude_model_name: str) -> str:
         """Resolve a Claude model name to the configured provider/model string.
 
         Classifies the incoming Claude model (opus/sonnet/haiku) and
         returns the model-specific override if configured, otherwise the fallback MODEL.
+
+        The [1m] suffix added by the Auto Mode classifier is stripped before
+        matching, as the classifier doesn't require the 1M context window.
         """
-        name_lower = claude_model_name.lower()
+        # Strip [1m] classifier suffix before matching
+        model_name = self._strip_classifier_suffix(claude_model_name)
+        name_lower = model_name.lower()
         if "opus" in name_lower and self.model_opus is not None:
             return self.model_opus
         if "haiku" in name_lower and self.model_haiku is not None:

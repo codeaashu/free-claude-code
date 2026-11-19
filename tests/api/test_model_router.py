@@ -96,3 +96,61 @@ def test_model_router_logs_mapping(settings):
     assert "MODEL MAPPING" in args[0]
     assert args[1] == "claude-2.1"
     assert args[2] == "fallback-model"
+
+
+def test_resolve_model_strips_classifier_suffix(settings):
+    """Test that [1m] suffix is stripped for model routing."""
+    settings.model_opus = "open_router/opus-model"
+    settings.model_sonnet = "nvidia_nim/sonnet-model"
+    settings.model_haiku = "lmstudio/haiku-model"
+
+    # Test all model types with [1m] suffix
+    assert Settings._strip_classifier_suffix("claude-opus-4[1m]") == "claude-opus-4"
+    assert Settings._strip_classifier_suffix("claude-3-5-sonnet[1m]") == "claude-3-5-sonnet"
+    assert Settings._strip_classifier_suffix("claude-3-haiku[1m]") == "claude-3-haiku"
+    assert Settings._strip_classifier_suffix("claude-sonnet-4-20250514[1m]") == "claude-sonnet-4-20250514"
+    assert Settings._strip_classifier_suffix("claude-opus-4") == "claude-opus-4"
+
+
+def test_model_router_resolves_with_classifier_suffix(settings):
+    """Test that model routing works with [1m] classifier suffix."""
+    settings.model_opus = "open_router/opus-model"
+    settings.model_sonnet = "nvidia_nim/sonnet-model"
+    settings.model_haiku = "lmstudio/haiku-model"
+
+    router = ModelRouter(settings)
+
+    # Test Opus with [1m]
+    resolved = router.resolve("claude-opus-4[1m]")
+    assert resolved.provider_model_ref == "open_router/opus-model"
+    assert resolved.original_model == "claude-opus-4[1m]"
+
+    # Test Sonnet with [1m]
+    resolved = router.resolve("claude-sonnet-4-20250514[1m]")
+    assert resolved.provider_model_ref == "nvidia_nim/sonnet-model"
+    assert resolved.original_model == "claude-sonnet-4-20250514[1m]"
+
+    # Test Haiku with [1m]
+    resolved = router.resolve("claude-3-haiku[1m]")
+    assert resolved.provider_model_ref == "lmstudio/haiku-model"
+    assert resolved.original_model == "claude-3-haiku[1m]"
+
+
+def test_model_router_messages_request_with_classifier_suffix(settings):
+    """Test that messages request routing preserves original model with [1m] suffix."""
+    settings.model_sonnet = "nvidia_nim/sonnet-model"
+
+    request = MessagesRequest(
+        model="claude-sonnet-4-20250514[1m]",
+        max_tokens=100,
+        messages=[Message(role="user", content="hello")],
+    )
+    routed = ModelRouter(settings).resolve_messages_request(request)
+
+    # Routed model should be the provider model (without [1m])
+    assert routed.request.model == "sonnet-model"
+    # Resolved should preserve original model with [1m]
+    assert routed.resolved.original_model == "claude-sonnet-4-20250514[1m]"
+    assert routed.resolved.provider_model_ref == "nvidia_nim/sonnet-model"
+    # Original request unchanged
+    assert request.model == "claude-sonnet-4-20250514[1m]"
