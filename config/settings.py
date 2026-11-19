@@ -318,7 +318,7 @@ class Settings(BaseSettings):
     def resolve_model(self, claude_model_name: str) -> str:
         """Resolve a Claude model name to the configured provider/model string.
 
-        Classifies the incoming Claude model (opus/sonnet/haiku) and
+        Classifies the incoming Claude model (opus/sonnet/haiku/fable) and
         returns the model-specific override if configured, otherwise the fallback MODEL.
 
         The [1m] suffix added by the Auto Mode classifier is stripped before
@@ -327,7 +327,8 @@ class Settings(BaseSettings):
         # Strip [1m] classifier suffix before matching
         model_name = self._strip_classifier_suffix(claude_model_name)
         name_lower = model_name.lower()
-        if "opus" in name_lower and self.model_opus is not None:
+        # Fable models are classified as Opus-tier
+        if ("opus" in name_lower or "fable" in name_lower) and self.model_opus is not None:
             return self.model_opus
         if "haiku" in name_lower and self.model_haiku is not None:
             return self.model_haiku

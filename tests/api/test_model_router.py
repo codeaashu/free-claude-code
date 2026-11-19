@@ -125,15 +125,35 @@ def test_model_router_resolves_with_classifier_suffix(settings):
     assert resolved.provider_model_ref == "open_router/opus-model"
     assert resolved.original_model == "claude-opus-4[1m]"
 
+    # Test Opus 5 with [1m] (classifier model)
+    resolved = router.resolve("claude-opus-5[1m]")
+    assert resolved.provider_model_ref == "open_router/opus-model"
+    assert resolved.original_model == "claude-opus-5[1m]"
+
+    # Test Fable 5 with [1m]
+    resolved = router.resolve("claude-fable-5[1m]")
+    assert resolved.provider_model_ref == "open_router/opus-model"
+    assert resolved.original_model == "claude-fable-5[1m]"
+
     # Test Sonnet with [1m]
     resolved = router.resolve("claude-sonnet-4-20250514[1m]")
     assert resolved.provider_model_ref == "nvidia_nim/sonnet-model"
     assert resolved.original_model == "claude-sonnet-4-20250514[1m]"
 
+    # Test Sonnet 5 with [1m]
+    resolved = router.resolve("claude-sonnet-5[1m]")
+    assert resolved.provider_model_ref == "nvidia_nim/sonnet-model"
+    assert resolved.original_model == "claude-sonnet-5[1m]"
+
     # Test Haiku with [1m]
     resolved = router.resolve("claude-3-haiku[1m]")
     assert resolved.provider_model_ref == "lmstudio/haiku-model"
     assert resolved.original_model == "claude-3-haiku[1m]"
+
+    # Test Haiku 5 with [1m]
+    resolved = router.resolve("claude-haiku-5[1m]")
+    assert resolved.provider_model_ref == "lmstudio/haiku-model"
+    assert resolved.original_model == "claude-haiku-5[1m]"
 
 
 def test_model_router_messages_request_with_classifier_suffix(settings):

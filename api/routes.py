@@ -17,6 +17,26 @@ router = APIRouter()
 
 SUPPORTED_CLAUDE_MODELS = [
     ModelResponse(
+        id="claude-fable-5",
+        display_name="Claude Fable 5",
+        created_at="2025-01-01T00:00:00Z",
+    ),
+    ModelResponse(
+        id="claude-opus-5",
+        display_name="Claude Opus 5",
+        created_at="2025-01-01T00:00:00Z",
+    ),
+    ModelResponse(
+        id="claude-sonnet-5",
+        display_name="Claude Sonnet 5",
+        created_at="2025-01-01T00:00:00Z",
+    ),
+    ModelResponse(
+        id="claude-haiku-5",
+        display_name="Claude Haiku 5",
+        created_at="2025-01-01T00:00:00Z",
+    ),
+    ModelResponse(
         id="claude-opus-4-20250514",
         display_name="Claude Opus 4",
         created_at="2025-05-14T00:00:00Z",
